@@ -15,28 +15,34 @@ interface UserProp {
 
 interface MessageProp {
   msg: string;
-  content: string;
+  content: {
+    tenant: string;
+    senderId: string;
+    receiverId: string;
+    message: string;
+  };
 }
 
 const App = () => {
-  const [admin, setAdmin] = useState<UserProp | null>(null);
+  const [user, setUser] = useState<UserProp | null>(null);
   const [messages, setMessages] = useState<MessageProp[]>([]);
+  const [receiverId, setReceiverId] = useState<UserProp | null>(null);
   const [value, setValue] = useState("");
   const socket = useContext(WebsocketContext);
 
   useEffect(() => {
-    const id = "661174ffe29edef4616a8872";
+    const id = "6613900918493ba30b0b6ca4";
 
-    const fetchAdmin = async () => {
+    const fetchUser = async () => {
       try {
         const response = await axios.get(`http://localhost:4000/users/${id}`);
-        setAdmin(response.data);
+        setUser(response.data);
       } catch (error) {
         console.error("Error fetching data", error);
       }
     };
 
-    fetchAdmin();
+    fetchUser();
   }, []);
 
   useEffect(() => {
@@ -44,10 +50,20 @@ const App = () => {
       console.log("Connected to live gateway");
     });
 
-    socket.on("onMessage", (data) => {
-      console.log("onMessage Received!");
-      console.log(data);
-      setMessages((messages) => [...messages, data]);
+    socket.on("onMessage", (data: any) => {
+      // const { content } = data;
+      // const { senderId } = content;
+
+      // axios
+      //   .get<UserProp>(`http://localhost:4000/users/${senderId}`)
+      //   .then((response) => {
+      //     const receiverData = response.data;
+      //     setReceiverId(receiverData);
+      //   });
+
+      if (data.content.receiverId === user?._id) {
+        setMessages((messages) => [...messages, data]);
+      }
     });
 
     return () => {
@@ -55,28 +71,31 @@ const App = () => {
       socket.off("connect");
       socket.off("onMessage");
     };
-  }, []);
+  }, [user]);
 
   const handleOnSubmit = () => {
     socket.emit("newMessage", value);
     setValue("");
   };
 
+  console.log(messages);
+  console.log(receiverId);
+
   return (
     <WebsocketProvider value={socket}>
       <div className="App">
         <h1>Admin</h1>
         <p>
-          {admin?.name} - {admin?.email}
+          {user?.name} - {user?.email}
         </p>
 
         <h1>Messages</h1>
         <div>
           {messages.length === 0
             ? "No messages"
-            : messages.map((item) => (
-                <div>
-                  <p>{item.content}</p>
+            : messages.map((item, index) => (
+                <div key={index}>
+                  <p>{item.content.message}</p>
                 </div>
               ))}
         </div>

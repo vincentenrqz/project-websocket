@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import "./App.css";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import {
   socket,
@@ -27,9 +26,10 @@ const App = () => {
   const [user, setUser] = useState<UserProp | null>(null);
   const [messages, setMessages] = useState<MessageProp[]>([]);
   const [value, setValue] = useState("");
+  const socket = useContext(WebsocketContext);
 
   useEffect(() => {
-    const id = "66138ffa18493ba30b0b6ca0";
+    const id = "6613901018493ba30b0b6ca6";
 
     const fetchAdmin = async () => {
       try {
@@ -67,12 +67,10 @@ const App = () => {
     setValue("");
   };
 
-  console.log(user);
-
   return (
-    <>
+    <WebsocketProvider value={socket}>
       <div className="App">
-        <h1>Client</h1>
+        <h1>Admin</h1>
         <p>
           {user?.name} - {user?.email}
         </p>
@@ -94,7 +92,7 @@ const App = () => {
         />
         <button onClick={handleOnSubmit}>Submit</button>
       </div>
-    </>
+    </WebsocketProvider>
   );
 };
 
