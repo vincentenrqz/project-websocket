@@ -16,6 +16,7 @@ import {
   TextField,
   Typography,
   Box,
+  Paper,
 } from "@mui/material";
 
 interface UserProp {
@@ -48,10 +49,22 @@ interface InboxProp {
   participants: [];
 }
 
+interface ReceiverProp {
+  _id: string;
+  name: string;
+  email: string;
+  password: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 const App = () => {
   const [inbox, setInbox] = useState<InboxProp[]>([]);
   const [messages, setMessages] = useState<MessageProp[]>([]);
+  const [receiver, setReceiver] = useState<ReceiverProp | null>(null);
   const [selected, setSelected] = useState("");
+  const [value, setValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const userId = "661174ffe29edef4616a8872";
@@ -75,7 +88,6 @@ const App = () => {
   // const [user, setUser] = useState<UserProp | null>(null);
   // const [messages, setMessages] = useState<MessageProp[]>([]);
   // const [conversations, setConversations] = useState<ConversationProp[]>([]);
-  // const [value, setValue] = useState("");
   // const socket = useContext(WebsocketContext);
 
   // useEffect(() => {
@@ -92,21 +104,37 @@ const App = () => {
   //   };
   // }, [user]);
 
-  // const handleOnSubmit = () => {
-  //   const newMessage = {
-  //     messages: [{ sender: user?._id, content: value }],
-  //   };
-  //   socket.emit("newMessage", {
-  //     participants: [user?._id, "661174ffe29edef4616a8872"],
-  //     messages: newMessage.messages,
-  //   });
-
-  //   setValue("");
-  // };
-
   const handleOnClick = (i: any) => {
-    setSelected(i);
+    const { participants } = i;
+    const receiverObj = participants.find((item: any) => item._id !== userId);
+
+    setReceiver(receiverObj);
+    setSelected(i._id);
   };
+
+  const handleOnSubmit = () => {
+    try {
+      const newMessage = {
+        messages: [{ sender: userId, content: value }],
+      };
+
+      // setMessages((currentMessages) => {
+      //   return {
+      //     ...currentMessages,
+      //     messages: [...currentMessages, newMessage.messages],
+      //   };
+      // });
+
+      socket.emit("newMessage", {
+        participants: [userId, receiver?._id],
+        messages: newMessage.messages,
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  console.log("messages", messages);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -138,11 +166,12 @@ const App = () => {
                 {inbox &&
                   inbox.map((i, _) => {
                     const { participants } = i;
+                    console.log(participants);
                     return (
                       <>
                         <ListItem>
-                          <Button onClick={() => handleOnClick(i._id)}>
-                            {participants.map((user: any, _: any) => (
+                          <Button onClick={() => handleOnClick(i)}>
+                            {participants.map((user: any, index: any) => (
                               <ListItemText>{user.name}</ListItemText>
                             ))}
                           </Button>
@@ -158,47 +187,73 @@ const App = () => {
               </List>
             </>
           </Grid>
-          <Grid item xs={10}>
-            Inbox
-            <Box>
+          <Grid item xs={8} style={{ marginTop: 40 }}>
+            <Box
+              style={{
+                backgroundColor: "white",
+                height: "100%",
+                paddingLeft: 10,
+                paddingRight: 10,
+                paddingTop: 10,
+              }}>
               {messages &&
                 messages.map((i, _) => {
                   const { messages } = i;
                   return (
-                    <Typography variant="caption" display="block" gutterBottom>
-                      {messages.map((message: any) => message.content)}
-                    </Typography>
+                    <>
+                      {messages.map((message: any) => {
+                        return (
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent:
+                                userId === message.sender
+                                  ? "flex-end"
+                                  : "flex-start",
+                            }}>
+                            <Paper
+                              variant="outlined"
+                              sx={{
+                                p: 1,
+                                backgroundColor:
+                                  userId === message.sender
+                                    ? "#3578E5"
+                                    : "#606770",
+                                borderRadius: 15,
+                                marginTop: 2,
+                                color: "white",
+                              }}>
+                              <Typography variant="body1">
+                                {message.content}
+                              </Typography>
+                            </Paper>
+                          </div>
+                        );
+                      })}
+                    </>
                   );
                 })}
             </Box>
+            <Box
+              style={{
+                backgroundColor: "white",
+                marginTop: 20,
+                padding: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "start",
+              }}>
+              <TextField
+                id="standard-basic"
+                label="Standard"
+                variant="standard"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+              />
+              <Button onClick={handleOnSubmit}>Submit</Button>
+            </Box>
           </Grid>
         </Grid>
-        {/* <h1>Admin</h1>
-        <p>
-          {user?.name} - {user?.email}
-        </p>
-
-        <h1>Messages</h1>
-        <div>
-          {conversations.length === 0
-            ? "No messages"
-            : conversations.map((item, index) => {
-                const { participants, messages } = item;
-                return (
-                  <ul key={index}>
-                    {messages.map((message, i) => (
-                      <li key={i}>{message.content}</li>
-                    ))}
-                  </ul>
-                );
-              })}
-        </div>
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-        />
-        <button onClick={handleOnSubmit}>Submit</button> */}
       </div>
     </WebsocketProvider>
   );
