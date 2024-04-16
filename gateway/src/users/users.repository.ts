@@ -1,5 +1,5 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User } from './schema/users.schema';
 import { UserDTO } from './dtos/users.dto';
 
@@ -17,5 +17,13 @@ export class UsersRepository {
 
   async getUserById(id: string) {
     return await this.userModel.findById(id);
+  }
+
+  async getUserByParticipants(participants: string[]) {
+    const users = await this.userModel
+      .find({ _id: { $in: participants } })
+      .exec();
+
+    return users;
   }
 }

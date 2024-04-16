@@ -1,0 +1,34 @@
+[
+  {
+    "_id": "66169eb3f0929fb3c5bf7b4d",
+    "participants": ["senderId", "receiverId"],
+    "messages": [
+      {
+        "senderId": "661174f3e29edef4616a8870",
+        "content": "Hi there!",
+        "timestamp": "2024-04-10T14:14:11.751+00:00"
+      },
+      {
+        "senderId": "661174f3e29edef4616a8870",
+        "content": "Hello how are you?",
+        "timestamp": "2024-04-10T15:18:11.751+00:00"
+      }
+    ]
+  },
+  {
+    "_id": "6616a8a43d3e7515e031c55d",
+    "participants": ["senderId", "receiverId"],
+    "messages": [
+      {
+        "senderId": "661174ffe29edef4616a8872",
+        "content": "Hi",
+        "timestamp": "2024-04-10T14:14:11.751+00:00"
+      },
+      {
+        "senderId": "661174f3e29edef4616a8870",
+        "content": "Hello",
+        "timestamp": "2024-04-10T15:18:11.751+00:00"
+      }
+    ]
+  }
+]

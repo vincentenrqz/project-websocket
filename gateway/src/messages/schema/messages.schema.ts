@@ -6,6 +6,9 @@ export type MessagesDocument = Messages & Document;
 
 @Schema({ timestamps: true })
 export class Messages {
+  @Prop({ type: mongoose.Schema.Types.ObjectId })
+  _id: string;
+
   @Prop({
     required: true,
     type: mongoose.Schema.Types.ObjectId,
@@ -20,7 +23,7 @@ export class Messages {
   content: string;
 
   @Prop({
-    default: Date.now,
+    default: null,
     type: Date,
   })
   timestamp: Date;

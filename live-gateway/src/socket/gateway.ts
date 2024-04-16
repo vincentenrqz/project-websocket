@@ -1,4 +1,5 @@
 import { OnModuleInit } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
   MessageBody,
@@ -26,9 +27,6 @@ export class MessagingGateway implements OnModuleInit {
 
   @SubscribeMessage('newMessage')
   onNewMessage(@ConnectedSocket() socket: Socket, @MessageBody() request: any) {
-    this.server.emit('onMessage', {
-      msg: 'New message...',
-      content: request,
-    });
+    this.server.emit('onMessage', request);
   }
 }

@@ -6,6 +6,17 @@ import {
   WebsocketContext,
   WebsocketProvider,
 } from "./context/WebsocketContext";
+import {
+  Grid,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  Button,
+  TextField,
+  Typography,
+  Box,
+} from "@mui/material";
 
 interface UserProp {
   _id: string;
@@ -14,97 +25,180 @@ interface UserProp {
 }
 
 interface MessageProp {
-  msg: string;
-  content: {
-    tenant: string;
-    senderId: string;
-    receiverId: string;
-    message: string;
-  };
+  _id: string;
+  sender: string;
+  content: string;
+  timestamp: Date;
+  createdAt: Date;
+  messages: [];
+}
+
+interface ConversationProp {
+  participants: [];
+  messages: [
+    {
+      sender: string;
+      content: string;
+    }
+  ];
+}
+
+interface InboxProp {
+  _id: string;
+  participants: [];
 }
 
 const App = () => {
-  const [user, setUser] = useState<UserProp | null>(null);
+  const [inbox, setInbox] = useState<InboxProp[]>([]);
   const [messages, setMessages] = useState<MessageProp[]>([]);
-  const [receiverId, setReceiverId] = useState<UserProp | null>(null);
-  const [value, setValue] = useState("");
-  const socket = useContext(WebsocketContext);
+  const [selected, setSelected] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const userId = "661174ffe29edef4616a8872";
 
   useEffect(() => {
-    const id = "6613900918493ba30b0b6ca4";
-
-    const fetchUser = async () => {
+    const fetchInbox = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/users/${id}`);
-        setUser(response.data);
-      } catch (error) {
-        console.error("Error fetching data", error);
+        const response = await axios.get(
+          `http://localhost:4000/inboxes/${userId}`
+        );
+        const data = await response.data;
+        setInbox(data);
+      } catch (err) {
+        console.log(err);
       }
     };
 
-    fetchUser();
+    fetchInbox();
   }, []);
 
-  useEffect(() => {
-    socket.on("connect", () => {
-      console.log("Connected to live gateway");
-    });
+  // const [user, setUser] = useState<UserProp | null>(null);
+  // const [messages, setMessages] = useState<MessageProp[]>([]);
+  // const [conversations, setConversations] = useState<ConversationProp[]>([]);
+  // const [value, setValue] = useState("");
+  // const socket = useContext(WebsocketContext);
 
-    socket.on("onMessage", (data: any) => {
-      // const { content } = data;
-      // const { senderId } = content;
+  // useEffect(() => {
+  //   socket.on("connect", () => {
+  //     console.log("Connected to live gateway");
+  //   });
 
-      // axios
-      //   .get<UserProp>(`http://localhost:4000/users/${senderId}`)
-      //   .then((response) => {
-      //     const receiverData = response.data;
-      //     setReceiverId(receiverData);
-      //   });
+  //   socket.on("onMessage", (data: any) => {});
 
-      if (data.content.receiverId === user?._id) {
-        setMessages((messages) => [...messages, data]);
-      }
-    });
+  //   return () => {
+  //     console.log("Unregistered Events...");
+  //     socket.off("connect");
+  //     socket.off("onMessage");
+  //   };
+  // }, [user]);
 
-    return () => {
-      console.log("Unregistered Events...");
-      socket.off("connect");
-      socket.off("onMessage");
-    };
-  }, [user]);
+  // const handleOnSubmit = () => {
+  //   const newMessage = {
+  //     messages: [{ sender: user?._id, content: value }],
+  //   };
+  //   socket.emit("newMessage", {
+  //     participants: [user?._id, "661174ffe29edef4616a8872"],
+  //     messages: newMessage.messages,
+  //   });
 
-  const handleOnSubmit = () => {
-    socket.emit("newMessage", value);
-    setValue("");
+  //   setValue("");
+  // };
+
+  const handleOnClick = (i: any) => {
+    setSelected(i);
   };
 
-  console.log(messages);
-  console.log(receiverId);
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        if (selected) {
+          const response = await axios.get(
+            `http://localhost:4000/inboxes/messages/${selected}`
+          );
+
+          const data = await response.data;
+          setMessages(data);
+        }
+      } catch (err) {
+        console.log("error", err);
+      }
+    };
+
+    fetchMessages();
+  }, [selected]);
 
   return (
     <WebsocketProvider value={socket}>
       <div className="App">
-        <h1>Admin</h1>
+        <Grid container spacing={2}>
+          <Grid item xs={2}>
+            <>
+              Inbox
+              <List>
+                {inbox &&
+                  inbox.map((i, _) => {
+                    const { participants } = i;
+                    return (
+                      <>
+                        <ListItem>
+                          <Button onClick={() => handleOnClick(i._id)}>
+                            {participants.map((user: any, _: any) => (
+                              <ListItemText>{user.name}</ListItemText>
+                            ))}
+                          </Button>
+                        </ListItem>
+                        <Divider
+                          variant="middle"
+                          component="li"
+                          style={{ background: "white" }}
+                        />
+                      </>
+                    );
+                  })}
+              </List>
+            </>
+          </Grid>
+          <Grid item xs={10}>
+            Inbox
+            <Box>
+              {messages &&
+                messages.map((i, _) => {
+                  const { messages } = i;
+                  return (
+                    <Typography variant="caption" display="block" gutterBottom>
+                      {messages.map((message: any) => message.content)}
+                    </Typography>
+                  );
+                })}
+            </Box>
+          </Grid>
+        </Grid>
+        {/* <h1>Admin</h1>
         <p>
           {user?.name} - {user?.email}
         </p>
 
         <h1>Messages</h1>
         <div>
-          {messages.length === 0
+          {conversations.length === 0
             ? "No messages"
-            : messages.map((item, index) => (
-                <div key={index}>
-                  <p>{item.content.message}</p>
-                </div>
-              ))}
+            : conversations.map((item, index) => {
+                const { participants, messages } = item;
+                return (
+                  <ul key={index}>
+                    {messages.map((message, i) => (
+                      <li key={i}>{message.content}</li>
+                    ))}
+                  </ul>
+                );
+              })}
         </div>
         <input
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />
-        <button onClick={handleOnSubmit}>Submit</button>
+        <button onClick={handleOnSubmit}>Submit</button> */}
       </div>
     </WebsocketProvider>
   );

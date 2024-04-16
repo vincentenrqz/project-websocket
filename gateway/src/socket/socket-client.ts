@@ -1,11 +1,12 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { HttpException, Injectable, OnModuleInit } from '@nestjs/common';
 import { io, Socket } from 'socket.io-client';
+import { InboxesService } from 'src/inboxes/inboxes.service';
 
 @Injectable()
 export class SocketClient implements OnModuleInit {
   public socketClient: Socket;
 
-  constructor() {
+  constructor(private inboxService: InboxesService) {
     this.socketClient = io('http://localhost:4001');
   }
 
@@ -19,7 +20,8 @@ export class SocketClient implements OnModuleInit {
     });
 
     this.socketClient.on('onMessage', (payload: any) => {
-      console.log(payload);
+      if (!payload) throw new HttpException('Something went wrong', 404);
+      this.inboxService.addMessage(payload);
     });
 
     this.socketClient.on('error', (error: any) => {

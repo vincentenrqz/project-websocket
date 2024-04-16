@@ -13,9 +13,9 @@ import { InboxesModule } from 'src/inboxes/inboxes.module';
         schema: MessagesSchema,
       },
     ]),
-    InboxesModule,
   ],
   controllers: [MessagesController],
   providers: [MessagesService],
+  exports: [MessagesService],
 })
 export class MessagesModule {}

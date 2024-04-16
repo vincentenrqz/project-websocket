@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UserDTO } from './dtos/users.dto';
 import { UsersRepository } from './users.repository';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersService {
@@ -16,5 +17,9 @@ export class UsersService {
 
   getUserById(id: string) {
     return this.userRepo.getUserById(id);
+  }
+
+  getByParticipants(participants: string[]) {
+    return this.userRepo.getUserByParticipants(participants);
   }
 }

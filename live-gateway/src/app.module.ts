@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { GatewayModule } from './socket/gateway.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
-  imports: [GatewayModule],
+  imports: [EventEmitterModule, GatewayModule],
   controllers: [],
   providers: [],
 })
